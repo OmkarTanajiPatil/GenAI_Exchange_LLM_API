@@ -8,14 +8,21 @@ app = Flask(__name__)
 
 def getKey():
     """
-    output: API key for the LLM
+    output: API key for the LLM (from env variable)
     """
-    curr_dir = os.path.dirname(os.path.abspath(__file__))
-    config_path = os.path.join(curr_dir, "config.json")
-    with open(config_path) as f:
-        api_key = json.load(f)["GROQ_API_KEY"]
+    api_key = os.getenv("GROQ_API_KEY")
+    if not api_key:
+        raise ValueError("Missing GROQ_API_KEY environment variable")
     return api_key
 
+def getUrl():
+    """
+    output: API key for the LLM (from env variable)
+    """
+    base_url = os.getenv("BASE_URL")
+    if not base_url:
+        raise ValueError("Missing BASE_URL environment variable")
+    return base_url
 
 def story_system_prompt():
     return """
