@@ -15,14 +15,6 @@ def getKey():
         raise ValueError("Missing GROQ_API_KEY environment variable")
     return api_key
 
-def getUrl():
-    """
-    output: API key for the LLM (from env variable)
-    """
-    base_url = os.getenv("BASE_URL")
-    if not base_url:
-        raise ValueError("Missing BASE_URL environment variable")
-    return base_url
 
 def story_system_prompt():
     return """
