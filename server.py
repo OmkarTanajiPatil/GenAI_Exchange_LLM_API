@@ -2,8 +2,22 @@ import requests
 import json
 import os
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 
 app = Flask(__name__)
+CORS(
+    app,
+    resources={
+        r"/*": {
+            "origins": "*",  # Allow all origins
+            "methods": ["GET", "PUT"],  # Allow only specified methods
+            "allow_headers": [
+                "Content-Type",
+                "Authorization",
+            ],  # Allow specific headers
+        }
+    },
+)
 
 
 def getKey():
@@ -175,7 +189,7 @@ def generate_titles():
     response = callLLM(messages)
     return jsonify(json.loads(response)), 200
 
-    
+
 @app.route("/get_stories", methods=["GET", "PUT"])
 def generate_stories():
     title = request.args.get("title") or request.json.get("title")
