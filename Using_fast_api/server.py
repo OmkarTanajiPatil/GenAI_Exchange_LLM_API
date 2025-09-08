@@ -1,9 +1,8 @@
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
-from typing import List, Optional
+from typing import List
 import google.generativeai as genai
-import json
 import base64
 from io import BytesIO
 from PIL import Image
