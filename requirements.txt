@@ -1,7 +1,8 @@
-python-dotenv
-gunicorn
-pydantic
 fastapi
+pydantic
+gunicorn
+uvicorn[standard]
+python-dotenv
 google-generativeai
 python-multipart
 Pillow
