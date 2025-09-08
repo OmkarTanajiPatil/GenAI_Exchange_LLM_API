@@ -3,7 +3,6 @@ from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 from typing import List
 import google.generativeai as genai
-import base64
 from io import BytesIO
 from PIL import Image
 import os
