@@ -242,7 +242,3 @@ async def health_check():
     return {"status": "healthy", "service": "artisan-content-generator"}
 
 
-if __name__ == "__main__":
-    import uvicorn
-
-    uvicorn.run(app)
