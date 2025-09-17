@@ -7,6 +7,7 @@ from io import BytesIO
 from PIL import Image
 import os
 import base64
+import uvicorn
 
 # Initialize FastAPI app
 app = FastAPI(title="Artisan Product Content Generator", version="1.0.0")
