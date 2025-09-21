@@ -12,6 +12,7 @@ import uvicorn
 
 from modelsDB import *
 from prompts import *
+from store_into_db_urls import *
 
 # Initialize FastAPI app
 app = FastAPI(title="Artisan Product Content Generator", version="1.0.0")
