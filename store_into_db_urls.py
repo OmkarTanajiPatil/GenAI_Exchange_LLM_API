@@ -26,6 +26,30 @@ async def api_store_title(product_id: str = Body(...), title: str = Body(...)):
     await update_product(product_id, {"title": title})
     return {"status": "success"}
 
+@app.post("/create_product")
+async def create_product():
+    """
+    Create a new empty product and return its ID.
+    """
+    try:
+        new_product = {
+            "name": "",
+            "category": "",
+            "location": "",
+            "description": "",
+            "title": "",
+            "story": "",
+            "caption": "",
+            "hashtags": [],
+            "seo_tags": [],
+            "image_base64": "",
+        }
+        result = await db["product"].insert_one(new_product)
+        return {"status": "success", "product_id": str(result.inserted_id)}
+    except Exception as e:
+        raise HTTPException(
+            status_code=400, detail=f"Could not create product: {str(e)}"
+        )
 
 @app.post("/store_story/")
 async def api_store_story(product_id: str = Body(...), story: str = Body(...)):
