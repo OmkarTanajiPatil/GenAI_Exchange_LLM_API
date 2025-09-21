@@ -3,6 +3,7 @@ from typing import List, Dict, Any
 from bson import ObjectId
 from database import db
 import base64
+from datetime import datetime
 
 from server import app  # Assuming server.py contains the FastAPI app instance
 
@@ -32,8 +33,10 @@ async def api_store_title(product_id: str = Body(...), title: str = Body(...)):
 async def create_product():
     """
     Create a new empty product and return its ID.
+
     """
     try:
+        current_time = datetime.now().strftime("%H:%M:%S")
         new_product = {
             "name": "",
             "category": "",
@@ -45,6 +48,7 @@ async def create_product():
             "hashtags": [],
             "seo_tags": [],
             "image_base64": "",
+            "timestamp": current_time,
         }
         result = await db["product"].insert_one(new_product)
         return {"status": "success", "product_id": str(result.inserted_id)}

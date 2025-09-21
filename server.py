@@ -1,8 +1,6 @@
 from database import db
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-from pydantic import BaseModel
-from typing import List
 import google.generativeai as genai
 from io import BytesIO
 from PIL import Image
@@ -55,6 +53,7 @@ def process_image(image_file: UploadFile) -> Image.Image:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
 
+
 @app.get("/")
 async def root():
     """Root endpoint with API information"""
@@ -66,6 +65,7 @@ async def root():
             "generate_stories": "/generate-stories",
         },
     }
+
 
 @app.post("/gen-images-name-category", response_model=GeneratedContent)
 async def generate_images_name_category(
@@ -295,6 +295,19 @@ async def generate_tags_captions(
         return GeneratedContent(
             success=False, data={}, message=f"Error generating tags/captions: {str(e)}"
         )
+
+
+@app.get("/products/")
+async def get_all_products():
+    """
+    Fetch all products from the database.
+    """
+    products_cursor = db["product"].find({})
+    products = []
+    async for product in products_cursor:
+        product["_id"] = str(product["_id"])  # Convert ObjectId to string for JSON
+        products.append(product)
+    return {"status": "success", "products": products}
 
 
 @app.get("/health")
