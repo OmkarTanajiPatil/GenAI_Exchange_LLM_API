@@ -117,45 +117,28 @@ async def generate_stories(
     description: str = Form(..., description="User provided description"),
 ):
     """
-    Generate 3 compelling stories for an artisan product based on the uploaded image and context.
+    Generate 3 compelling stories for an artisan product based on context.
     """
     try:
-        # Validate image file
-        if not image.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="File must be an image")
-
-        # Process the image
-        processed_image = process_image(image)
-
         # Generate the prompt
         prompt = generate_stories_prompt(user_title, location, category, description)
 
         # Call Gemini API
-        response = model.generate_content([prompt, processed_image])
-
-        # Parse the response
+        response = model.generate_content([prompt])
         stories_text = response.text.strip()
 
-        # Split stories by the marker
-        stories = []
+        # Split stories by marker
         if "---STORY---" in stories_text:
-            story_parts = stories_text.split("---STORY---")
-            stories = [story.strip() for story in story_parts if story.strip()]
+            stories = [s.strip() for s in stories_text.split("---STORY---") if s.strip()]
         else:
-            # Fallback: split by double newlines or assume single story
-            story_parts = stories_text.split("\n\n\n")
-            if len(story_parts) >= 3:
-                stories = story_parts[:3]
-            else:
-                # If we can't parse properly, create fallback stories
-                stories = [stories_text]
+            stories = [stories_text]
 
-        # Ensure we have exactly 3 stories
+        # Ensure exactly 3 stories
         while len(stories) < 3:
             stories.append(
-                f"This beautiful {category} from {location} represents the rich tradition of local craftsmanship. Each piece tells a story of dedication, skill, and cultural heritage passed down through generations."
+                f"This {category} from {location} reflects the tradition of craftsmanship, blending creativity and culture."
             )
-        stories = stories[:3]  # Take only first 3
+        stories = stories[:3]
 
         return GeneratedContent(
             success=True,
@@ -167,6 +150,7 @@ async def generate_stories(
         return GeneratedContent(
             success=False, data={}, message=f"Error generating stories: {str(e)}"
         )
+
 
 
 @app.post("/gen-images-name-category", response_model=GeneratedContent)
