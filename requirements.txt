@@ -6,3 +6,4 @@ pillow
 google-generativeai
 python-multipart
 starlette
+motor
