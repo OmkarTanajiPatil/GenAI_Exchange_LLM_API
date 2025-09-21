@@ -50,24 +50,24 @@ def generate_stories_prompt(
 
 
 def generate_images_prompt() -> str:
-    """Generate a strict prompt for image generation based on provided context."""
+    """Generate a strict prompt for image generation based on provided context for any product."""
     return """
-    Generate three distinct, high-quality images of an artisan product. The images should look professional, natural, and not obviously AI-generated, with the goal of increasing sales.
+    Generate three distinct, high-quality images of a product. The images should look professional, natural, and not obviously AI-generated, with the goal of showcasing the product effectively.
 
     Image 1: The Studio Shot
-    A clean, well-lit studio photograph of the product. The background is a soft, neutral tone (like beige, light gray, or a subtly textured linen fabric) that complements the product's color without overpowering it. The lighting is soft and even, highlighting the intricate details and texture of the product. The focus is sharp on the product itself. The image should convey professionalism, quality, and craftsmanship.
+    A clean, well-lit studio photograph of the product. The background is a soft, neutral tone (like beige, light gray, or a subtly textured fabric) that complements the product's color without overpowering it. The lighting is soft and even, highlighting the product's features and texture. The focus is sharp on the product itself. The image should convey professionalism, quality, and attention to detail.
 
     Image 2: The Lifestyle Shot
-    A lifestyle photo of the product in a natural, everyday setting. The product is the central focus, but it is shown in use or in a styled environment that feels authentic and aspirational. The setting should be warm, inviting, and well-lit by natural light (e.g., near a window or outdoors on a sunny day). The image should evoke a feeling or tell a story about how the product fits into a beautiful life.
+    A lifestyle photo of the product in a natural, everyday setting. The product is the central focus, shown in use or in a styled environment that feels authentic and relatable. The setting should be warm, inviting, and well-lit by natural light (e.g., near a window or outdoors). The image should evoke a feeling or tell a story about how the product fits into everyday life.
 
     Image 3: The Close-Up Shot
-    A high-detail, macro-style close-up photograph of a specific feature of the product. This image should highlight the unique imperfections, textures, and craftsmanship that make it special. The focus should be on an element like the intricate carving, the texture of the glaze, the stitching of the leather, or the unique grain of the wood. The lighting should be used to create subtle shadows that emphasize depth and dimension. This image should make the product feel tangible and showcase the human touch in its creation.
+    A high-detail, macro-style close-up photograph highlighting a specific feature of the product. This image should show textures, patterns, or details that make the product unique. The focus should emphasize craftsmanship, material quality, or design details. Lighting should create subtle shadows to emphasize depth and dimension. The image should make the product feel tangible and appealing.
 
     Key Instructions:
-    - Lighting: Use soft, natural, or studio-style lighting. Avoid harsh shadows or over-the-top, dramatic lighting.
-    - Composition: Apply the rule of thirds where appropriate. Ensure the product is the clear hero of each shot.
-    - Style: Maintain a coherent style across all three images. They should feel like they belong to the same brand. The aesthetic should be clean, authentic, and modern-rustic.
-    - Generative Feel: The images should not have the "perfect" look of AI. Introduce subtle, natural elements like a slight blur in the background, a realistic depth of field, or a gentle reflection. Avoid hyper-real or overly smooth textures.
+    - Lighting: Use soft, natural, or studio-style lighting. Avoid harsh shadows or overly dramatic effects.
+    - Composition: Apply the rule of thirds where appropriate. Ensure the product is the main focus of each shot.
+    - Style: Maintain a coherent style across all three images. They should feel consistent and visually appealing.
+    - Generative Feel: The images should look natural and realistic, with slight imperfections that make them feel human-photographed rather than artificially perfect.
     """
 
 

@@ -6,6 +6,7 @@ import base64
 
 from server import app  # Assuming server.py contains the FastAPI app instance
 
+
 async def update_product(product_id: str, fields: Dict[str, Any]):
     """
     Generic product updater.
@@ -25,6 +26,7 @@ async def update_product(product_id: str, fields: Dict[str, Any]):
 async def api_store_title(product_id: str = Body(...), title: str = Body(...)):
     await update_product(product_id, {"title": title})
     return {"status": "success"}
+
 
 @app.post("/create_product")
 async def create_product():
@@ -51,6 +53,7 @@ async def create_product():
             status_code=400, detail=f"Could not create product: {str(e)}"
         )
 
+
 @app.post("/store_story/")
 async def api_store_story(product_id: str = Body(...), story: str = Body(...)):
     await update_product(product_id, {"story": story})
@@ -73,6 +76,28 @@ async def api_store_image(product_id: str = Body(...), image_base64: str = Body(
         raise HTTPException(
             status_code=400, detail=f"Invalid base64 or DB error: {str(e)}"
         )
+
+
+@app.post("/store_name_category_location/")
+async def store_name_Category_Location(
+    product_id: str, name: str, category: str, location: str
+):
+    """
+    Store name, category, and location for a product in MongoDB.
+    """
+    await update_product(
+        product_id, {"name": name, "category": category, "location": location}
+    )
+    return {"status": "success"}
+
+
+@app.post("/store_description/")
+async def store_description(product_id: str, description: str):
+    """
+    Store description for a product.
+    """
+    await update_product(product_id, {"description": description})
+    return {"status": "success"}
 
 
 @app.post("/store_caption_hashtags_seo/")
