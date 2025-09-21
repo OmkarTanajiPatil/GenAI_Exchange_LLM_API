@@ -1,3 +1,4 @@
+from database import db
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
@@ -9,6 +10,7 @@ import os
 import base64
 import uvicorn
 
+from modelsDB import *
 from prompts import *
 
 # Initialize FastAPI app
@@ -35,21 +37,6 @@ genai.configure(api_key=GEMINI_API_KEY)
 # Initialize the model
 model = genai.GenerativeModel("gemini-1.5-flash")
 image_generation_model = genai.GenerativeModel("gemini-2.5-flash-image-preview")
-
-
-# Response models
-class TitleResponse(BaseModel):
-    titles: List[str]
-
-
-class StoryResponse(BaseModel):
-    stories: List[str]
-
-
-class GeneratedContent(BaseModel):
-    success: bool
-    data: dict
-    message: str
 
 
 def process_image(image_file: UploadFile) -> Image.Image:
@@ -98,11 +85,15 @@ async def generate_titles(
         titles_text = response.text.strip()
         titles = [title.strip() for title in titles_text.split("\n") if title.strip()]
         titles = titles[:3]
-        return GeneratedContent(
+        result = GeneratedContent(
             success=True,
             data={"titles": titles},
             message="Titles generated successfully",
         )
+        if result.success:
+            await db["titles"].insert_one(result.model_dump())
+        return result
+
     except Exception as e:
         return GeneratedContent(
             success=False, data={}, message=f"Error generating titles: {str(e)}"
@@ -129,7 +120,9 @@ async def generate_stories(
 
         # Split stories by marker
         if "---STORY---" in stories_text:
-            stories = [s.strip() for s in stories_text.split("---STORY---") if s.strip()]
+            stories = [
+                s.strip() for s in stories_text.split("---STORY---") if s.strip()
+            ]
         else:
             stories = [stories_text]
 
@@ -140,17 +133,21 @@ async def generate_stories(
             )
         stories = stories[:3]
 
-        return GeneratedContent(
+        result = GeneratedContent(
             success=True,
             data={"stories": stories},
             message="Stories generated successfully",
         )
 
+        # ⬇️ Save to DB
+        if result.success:
+            await db["stories"].insert_one(result.model_dump())
+        return result
+
     except Exception as e:
         return GeneratedContent(
             success=False, data={}, message=f"Error generating stories: {str(e)}"
         )
-
 
 
 @app.post("/gen-images-name-category", response_model=GeneratedContent)
@@ -195,7 +192,7 @@ async def generate_images_name_category(
         if len(generated_images_data) == 0:
             raise Exception("API did not return any image data.")
 
-        return GeneratedContent(
+        result = GeneratedContent(
             success=True,
             data={
                 "images": generated_images_data,
@@ -204,6 +201,11 @@ async def generate_images_name_category(
             },
             message="Images generated successfully.",
         )
+
+        # ⬇️ Save to DB
+        if result.success:
+            await db["images"].insert_one(result.model_dump())
+        return result
 
     except Exception as e:
         return GeneratedContent(
@@ -278,7 +280,7 @@ async def generate_tags_captions(
         hashtags = hashtags[:7]
         captions = captions[:3]
 
-        return GeneratedContent(
+        result = GeneratedContent(
             success=True,
             data={
                 "seo_tags": seo_tags,
@@ -287,6 +289,11 @@ async def generate_tags_captions(
             },
             message="Tags, hashtags, and captions generated successfully.",
         )
+
+        # ⬇️ Save to DB
+        if result.success:
+            await db["tags_captions"].insert_one(result.model_dump())
+        return result
     except Exception as e:
         return GeneratedContent(
             success=False, data={}, message=f"Error generating tags/captions: {str(e)}"
@@ -297,6 +304,7 @@ async def generate_tags_captions(
 async def health_check():
     """Health check endpoint"""
     return {"status": "healthy", "service": "artisan-content-generator"}
+
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 8000))  # Render provides PORT
