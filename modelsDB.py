@@ -23,7 +23,7 @@ class Product(BaseModel):
     category: str = Field(
         ...,
         description="Category of the product",
-        regex="^(textile|pottery|furniture|jewellery|decorative work|home utilities)$",
+        pattern="^(textile|pottery|furniture|jewellery|decorative work|home utilities)$",
     )
     location: str
     description: Optional[str] = ""
