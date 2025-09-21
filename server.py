@@ -25,9 +25,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Configure Gemini API
-# Set your API key as environment variable: export GEMINI_API_KEY="your_api_key_here"
-# GEMINI_API_KEY =
+
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("Please set GEMINI_API_KEY environment variable")
@@ -56,7 +54,6 @@ def process_image(image_file: UploadFile) -> Image.Image:
     except Exception as e:
         raise HTTPException(status_code=400, detail=f"Error processing image: {str(e)}")
 
-
 @app.get("/")
 async def root():
     """Root endpoint with API information"""
@@ -68,6 +65,68 @@ async def root():
             "generate_stories": "/generate-stories",
         },
     }
+
+@app.post("/gen-images-name-category", response_model=GeneratedContent)
+async def generate_images_name_category(
+    image: UploadFile = File(..., description="Artisan product image"),
+):
+    """
+    Generate 3 enhanced images for an artisan product based on the uploaded image.
+    """
+    try:
+        if not image.content_type.startswith("image/"):
+            raise HTTPException(status_code=400, detail="File must be an image")
+
+        processed_image = process_image(image)
+        image_generation_prompt = generate_images_prompt()
+        category_generation_prompt = category_prompt()
+        title_generation_prompt = product_name_prompt()
+
+        image_response = image_generation_model.generate_content(
+            [processed_image, image_generation_prompt]
+        )
+        category_response = image_generation_model.generate_content(
+            [processed_image, category_generation_prompt]
+        )
+        title_response = image_generation_model.generate_content(
+            [processed_image, title_generation_prompt]
+        )
+
+        generated_images_data = []
+        for part in image_response.candidates[0].content.parts:
+            if part.inline_data:
+                # The Gemini API provides image data as inline data
+                img_data = part.inline_data.data
+                img_str = base64.b64encode(img_data).decode("utf-8")
+                generated_images_data.append(
+                    f"data:{part.inline_data.mime_type};base64,{img_str}"
+                )
+
+        generated_titles = title_response.text.split("\n")
+        generated_category = category_response.text.strip()
+
+        if len(generated_images_data) == 0:
+            raise Exception("API did not return any image data.")
+
+        result = GeneratedContent(
+            success=True,
+            data={
+                "images": generated_images_data,
+                "titles": generated_titles,
+                "category": generated_category,
+            },
+            message="Images generated successfully.",
+        )
+
+        # ⬇️ Save to DB
+        if result.success:
+            await db["images"].insert_one(result.model_dump())
+        return result
+
+    except Exception as e:
+        return GeneratedContent(
+            success=False, data={}, message=f"Error generating images: {str(e)}"
+        )
 
 
 @app.post("/gen-titles", response_model=GeneratedContent)
@@ -147,69 +206,6 @@ async def generate_stories(
     except Exception as e:
         return GeneratedContent(
             success=False, data={}, message=f"Error generating stories: {str(e)}"
-        )
-
-
-@app.post("/gen-images-name-category", response_model=GeneratedContent)
-async def generate_images_name_category(
-    image: UploadFile = File(..., description="Artisan product image"),
-):
-    """
-    Generate 3 enhanced images for an artisan product based on the uploaded image.
-    """
-    try:
-        if not image.content_type.startswith("image/"):
-            raise HTTPException(status_code=400, detail="File must be an image")
-
-        processed_image = process_image(image)
-        image_generation_prompt = generate_images_prompt()
-        category_generation_prompt = category_prompt()
-        title_generation_prompt = product_name_prompt()
-
-        image_response = image_generation_model.generate_content(
-            [processed_image, image_generation_prompt]
-        )
-        category_response = image_generation_model.generate_content(
-            [processed_image, category_generation_prompt]
-        )
-        title_response = image_generation_model.generate_content(
-            [processed_image, title_generation_prompt]
-        )
-
-        generated_images_data = []
-        for part in image_response.candidates[0].content.parts:
-            if part.inline_data:
-                # The Gemini API provides image data as inline data
-                img_data = part.inline_data.data
-                img_str = base64.b64encode(img_data).decode("utf-8")
-                generated_images_data.append(
-                    f"data:{part.inline_data.mime_type};base64,{img_str}"
-                )
-
-        generated_titles = title_response.text.split("\n")
-        generated_category = category_response.text.strip()
-
-        if len(generated_images_data) == 0:
-            raise Exception("API did not return any image data.")
-
-        result = GeneratedContent(
-            success=True,
-            data={
-                "images": generated_images_data,
-                "titles": generated_titles,
-                "category": generated_category,
-            },
-            message="Images generated successfully.",
-        )
-
-        # ⬇️ Save to DB
-        if result.success:
-            await db["images"].insert_one(result.model_dump())
-        return result
-
-    except Exception as e:
-        return GeneratedContent(
-            success=False, data={}, message=f"Error generating images: {str(e)}"
         )
 
 
