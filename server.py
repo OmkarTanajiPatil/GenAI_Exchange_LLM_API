@@ -1,7 +1,7 @@
 from database import db
 from fastapi import FastAPI, File, UploadFile, Form, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
-import google.generativeai as genai
+from google import genai
 from io import BytesIO
 from PIL import Image
 import os
@@ -29,11 +29,12 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 if not GEMINI_API_KEY:
     raise ValueError("Please set GEMINI_API_KEY environment variable")
 
-genai.configure(api_key=GEMINI_API_KEY)
+# Initialize the client
+client = genai.Client(api_key=GEMINI_API_KEY)
 
-# Initialize the model
-model = genai.GenerativeModel("gemini-1.5-flash-latest")
-image_generation_model = genai.GenerativeModel("gemini-2.5-flash-image")
+# Define model names
+TEXT_MODEL = "gemini-2.5-flash"
+IMAGE_GENERATION_MODEL = "gemini-2.5-flash-image"
 
 
 def process_image(image_file: UploadFile) -> Image.Image:
@@ -83,14 +84,17 @@ async def generate_images_name_category(
         category_generation_prompt = category_prompt()
         title_generation_prompt = product_name_prompt()
 
-        image_response = image_generation_model.generate_content(
-            [processed_image, image_generation_prompt]
+        image_response = client.models.generate_content(
+            model=IMAGE_GENERATION_MODEL,
+            contents=[processed_image, image_generation_prompt],
         )
-        category_response = image_generation_model.generate_content(
-            [processed_image, category_generation_prompt]
+        category_response = client.models.generate_content(
+            model=IMAGE_GENERATION_MODEL,
+            contents=[processed_image, category_generation_prompt],
         )
-        title_response = image_generation_model.generate_content(
-            [processed_image, title_generation_prompt]
+        title_response = client.models.generate_content(
+            model=IMAGE_GENERATION_MODEL,
+            contents=[processed_image, title_generation_prompt],
         )
 
         generated_images_data = []
@@ -141,7 +145,7 @@ async def generate_titles(
     """
     try:
         prompt = generate_titles_prompt(user_title, location, category)
-        response = model.generate_content([prompt])
+        response = client.models.generate_content(model=TEXT_MODEL, contents=prompt)
         titles_text = response.text.strip()
         titles = [title.strip() for title in titles_text.split("\n") if title.strip()]
         titles = titles[:3]
@@ -175,7 +179,7 @@ async def generate_stories(
         prompt = generate_stories_prompt(user_title, location, category, description)
 
         # Call Gemini API
-        response = model.generate_content([prompt])
+        response = client.models.generate_content(model=TEXT_MODEL, contents=prompt)
         stories_text = response.text.strip()
 
         # Split stories by marker
@@ -228,7 +232,9 @@ async def generate_tags_captions(
         processed_image = process_image(image)
         prompt = generate_tags_captions_prompt(title, description, category, location)
 
-        response = model.generate_content([prompt, processed_image])
+        response = client.models.generate_content(
+            model=TEXT_MODEL, contents=[prompt, processed_image]
+        )
         result_text = response.text.strip()
 
         # Parse the response
@@ -317,5 +323,5 @@ async def health_check():
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 8000))  # Render provides PORT
+    port = int(os.environ.get("PORT", 2000))  # Render provides PORT
     uvicorn.run("server:app", host="0.0.0.0", port=port, reload=False)
