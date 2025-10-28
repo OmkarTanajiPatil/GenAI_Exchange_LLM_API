@@ -32,8 +32,8 @@ if not GEMINI_API_KEY:
 genai.configure(api_key=GEMINI_API_KEY)
 
 # Initialize the model
-model = genai.GenerativeModel("gemini-1.5-flash")
-image_generation_model = genai.GenerativeModel("gemini-2.5-flash-image-preview")
+model = genai.GenerativeModel("gemini-1.5-flash-latest")
+image_generation_model = genai.GenerativeModel("gemini-2.5-flash-image")
 
 
 def process_image(image_file: UploadFile) -> Image.Image:
