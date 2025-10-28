@@ -3,7 +3,7 @@ uvicorn
 pydantic
 typing-extensions
 pillow
-google
+google-genai
 python-multipart
 starlette
 motor
